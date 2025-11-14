@@ -1,0 +1,24 @@
+# This is a .gitignore for a monorepo
+
+# 1. System Files
+.DS_Store
+*.log
+
+# 2. Dependencies
+# Ignore all node_modules folders in the entire project
+**/node_modules
+
+# 3. Secrets
+# Ignore all .env files (and variants) in the entire project
+**/.env
+**/.env.local
+**/.env.development
+**/.env.production
+
+# 4. Build Artifacts
+# Next.js build folder
+/frontend/.next
+/frontend/out
+
+# Node.js build folder
+/backend/dist

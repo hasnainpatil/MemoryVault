@@ -1,0 +1,38 @@
+### Test Health Check
+GET http://localhost:5001/api/health
+
+### Test Supabase Connection
+GET http://localhost:5001/api/supabase-test
+
+### Test User Signup (Change email if you run it multiple times!)
+POST http://localhost:5001/api/auth/signup
+Content-Type: application/json
+
+{
+  "email": "testing789@myapp.com",
+  "password": "securepassword",
+  "fullName": "REST Client Tester"
+}
+
+### Login to get Access Token
+POST http://localhost:5001/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "testing789@myapp.com",
+  "password": "securepassword"
+}
+
+### Test File Upload (NEEDS A REAL TOKEN!)
+POST http://localhost:5001/api/documents/upload
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsImtpZCI6Ik5JRzVybHBySStFbDFDVWsiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2d6cmpwaXNjZGdjdmdyZGFsZHJsLnN1cGFiYXNlLmNvL2F1dGgvdjEiLCJzdWIiOiIxYzJiMWRmNy1hODNlLTRjODYtYmZjNi05MzA2ODhlYWQyYjciLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzYzMDM5NDU0LCJpYXQiOjE3NjMwMzU4NTQsImVtYWlsIjoidGVzdGluZzc4OUBteWFwcC5jb20iLCJwaG9uZSI6IiIsImFwcF9tZXRhZGF0YSI6eyJwcm92aWRlciI6ImVtYWlsIiwicHJvdmlkZXJzIjpbImVtYWlsIl19LCJ1c2VyX21ldGFkYXRhIjp7ImVtYWlsIjoidGVzdGluZzc4OUBteWFwcC5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiZnVsbF9uYW1lIjoiUkVTVCBDbGllbnQgVGVzdGVyIiwicGhvbmVfdmVyaWZpZWQiOmZhbHNlLCJzdWIiOiIxYzJiMWRmNy1hODNlLTRjODYtYmZjNi05MzA2ODhlYWQyYjcifSwicm9sZSI6ImF1dGhlbnRpY2F0ZWQiLCJhYWwiOiJhYWwxIiwiYW1yIjpbeyJtZXRob2QiOiJwYXNzd29yZCIsInRpbWVzdGFtcCI6MTc2MzAzNTg1NH1dLCJzZXNzaW9uX2lkIjoiNDZiNzQ0ZTAtOTVkZC00YmY0LTg2ZjItMjM2MThkYmYyMTBmIiwiaXNfYW5vbnltb3VzIjpmYWxzZX0.yTB4MQlcRs8e1z7LEr3KZgVhktCfaSh4gmyABHeFRJ4
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="test_notes2.txt"
+Content-Type: text/plain
+
+This is a test document.
+It contains some super important secrets.
+Hushh!
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
