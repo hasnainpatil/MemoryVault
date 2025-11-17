@@ -53,7 +53,7 @@ graph TD
     subgraph "RAG Pipeline (Ingestion)"
         A --> G[POST /api/documents/upload];
         G --> H[Supabase Storage];
-        G --> I[Google AI SDK<br/>(AI-Native Text Extraction)];
+        G --> I["Google AI SDK<br/>(AI-Native Text Extraction)"];
         I --> J[Chunk Text];
         J --> K[Google Embedding API];
         K --> L[Pinecone Vector DB];
@@ -63,10 +63,10 @@ graph TD
 
     subgraph "RAG Pipeline (Query)"
         A --> N[POST /api/documents/chat];
-        N --> O[Google Embedding API<br/>(Embeds Question)];
-        O --> P[Pinecone Vector DB<br/>(Similarity Search + Metadata Filter)];
+        N --> O["Google Embedding API<br/>(Embeds Question)"];
+        O --> P["Pinecone Vector DB<br/>(Similarity Search + Metadata Filter)"];
         P --> Q[Get Relevant Chunks];
-        Q --> R[Google Chat API<br/>(Injects Chunks + Query)];
+        Q --> R["Google Chat API<br/>(Injects Chunks + Query)"];
         R --> S[Get Final Answer];
         S --> N;
         N --> A;
