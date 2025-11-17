@@ -1,24 +1,35 @@
 // src/lib/vectorStore.ts
 
-// 1. CHANGE: Import Google's Embeddings instead of OpenAI
-import { GoogleGenerativeAIEmbeddings } from "@langchain/google-genai";
+import { GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { PineconeStore } from "@langchain/pinecone";
 import { Pinecone } from "@pinecone-database/pinecone";
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
-import pdf = require('pdf-parse');
-import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import { HumanMessage } from "@langchain/core/messages"; // This will now work
 
-// 2. CHANGE: Initialize Google Embedder
-//    Model "text-embedding-004" is their latest, efficient model (768 dims)
+// --- 1. INITIALIZE ALL OUR AI TOOLS ---
+
+// The "Embedder" (Turns text into 768-dim vectors)
 const embeddings = new GoogleGenerativeAIEmbeddings({
-  modelName: "text-embedding-004", 
+  modelName: "text-embedding-004",
   apiKey: process.env.GOOGLE_API_KEY,
 });
 
-// Initialize Pinecone Client
+// The "Vector DB Connector"
 const pinecone = new Pinecone({
   apiKey: process.env.PINECONE_API_KEY!,
 });
+
+// The "Chat Brain" (Generates answers AND reads PDFs)
+const llm = new ChatGoogleGenerativeAI({
+  model: "gemini-2.0-flash", // Our fast, reliable model
+  apiKey: process.env.GOOGLE_API_KEY,
+  temperature: 0,
+});
+
+// --- 2. THE INGESTION FUNCTION ---
+
+const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY!);
 
 export async function embedDocument(
   fileBuffer: Buffer,
@@ -29,23 +40,48 @@ export async function embedDocument(
   try {
     console.log(`[AI] Starting embedding for doc ${documentId} using Google Gemini...`);
 
-    // --- STEP A: EXTRACT TEXT ---
+    // --- STEP A: EXTRACT TEXT (THE DIRECT AI WAY) ---
     let rawText = "";
+
     if (fileType === "application/pdf") {
-      const data = await pdf(fileBuffer);
-      rawText = data.text;
+      console.log("[AI] Sending PDF to Google SDK for extraction...");
+      
+      // 1. We select the "Flash" model for this task
+      const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+
+      // 2. We convert our file buffer to a Base64 string
+      const base64pdf = fileBuffer.toString("base64");
+
+      // 3. We build the "prompt" with the PDF data
+      const prompt = "Extract all text from this PDF document. Only return the raw text.";
+      const filePart = {
+        inlineData: {
+          data: base64pdf,
+          mimeType: "application/pdf",
+        },
+      };
+
+      // 4. We call the Google SDK directly
+      const result = await model.generateContent([prompt, filePart]);
+      const response = await result.response;
+      rawText = response.text();
+
     } else {
+      // It's already text (txt or md)
       rawText = fileBuffer.toString("utf-8");
     }
 
-    // --- STEP B: CHUNK THE TEXT ---
+    if (!rawText.trim()) {
+      throw new Error("Failed to extract any text from document. It might be an image-only PDF.");
+    }
+    console.log("[AI] Successfully extracted text.");
+
+    // --- STEP B: CHUNK THE TEXT (LangChain) ---
     const splitter = new RecursiveCharacterTextSplitter({
       chunkSize: 1000,
       chunkOverlap: 200,
     });
-
     const docs = await splitter.createDocuments([rawText]);
-
     console.log(`[AI] Split document into ${docs.length} chunks.`);
 
     // --- STEP C: ADD METADATA ---
@@ -56,10 +92,8 @@ export async function embedDocument(
       };
     });
 
-    // --- STEP D: EMBED & STORE IN PINECONE ---
+    // --- STEP D: EMBED & STORE (LangChain) ---
     const index = pinecone.Index("memoryvault");
-    
-    // Note: We are sending the Google Embeddings object here
     await PineconeStore.fromDocuments(docs, embeddings, {
       pineconeIndex: index,
     });
@@ -72,6 +106,11 @@ export async function embedDocument(
   }
 }
 
+// ... (Keep your 'searchSimilarDocuments' and 'generateAnswer' functions as they are) ...
+// ... (They correctly use LangChain, which is fine!) ...
+
+// --- 3. THE RETRIEVAL FUNCTION ---
+
 export async function searchSimilarDocuments(
   query: string,
   userId: string,
@@ -79,19 +118,15 @@ export async function searchSimilarDocuments(
 ) {
   try {
     console.log(`[AI] Searching for: "${query}" for user: ${userId}`);
-
     const index = pinecone.Index("memoryvault");
 
-    // 1. Setup the Vector Store
     const vectorStore = await PineconeStore.fromExistingIndex(embeddings, {
       pineconeIndex: index,
     });
 
-    // 2. Perform the Search
-    //    FIX: We cast to 'any' to bypass the version conflict error.
-    //    We know 'similaritySearch' exists at runtime.
+    // THE 'any' CAST FIX: Bypasses TypeScript version conflicts
     const results = await (vectorStore as any).similaritySearch(query, limit, {
-      userId: userId, // <--- THIS IS OUR SECURITY FILTER
+      userId: userId, // The RLS filter
     });
 
     console.log(`[AI] Found ${results.length} results.`);
@@ -103,27 +138,16 @@ export async function searchSimilarDocuments(
   }
 }
 
-// ... existing searchSimilarDocuments function ...
+// --- 4. THE GENERATION FUNCTION ---
 
 export async function generateAnswer(query: string, userId: string) {
   try {
-    // 1. Initialize the "Analyst" (Gemini Pro)
-    const llm = new ChatGoogleGenerativeAI({
-      model: "gemini-2.0-flash",       // FIX 1: Changed from 'modelName' to 'model'
-      apiKey: process.env.GOOGLE_API_KEY,
-      temperature: 0,
-    });
-
-    // 2. Get the relevant "Books" (Context)
     const similarDocs = await searchSimilarDocuments(query, userId);
 
-    // 3. If no documents found, stop early
     if (similarDocs.length === 0) {
       return "I couldn't find any information about that in your documents.";
     }
 
-    // 4. Prepare the "Briefing" (The Prompt)
-    //    FIX 2: We explicitly type '(doc: any)' to satisfy TypeScript
     const contextText = similarDocs.map((doc: any) => doc.pageContent).join("\n\n");
 
     const prompt = `
@@ -140,11 +164,8 @@ export async function generateAnswer(query: string, userId: string) {
       ANSWER:
     `;
 
-    // 5. Ask the Analyst
-    //    FIX 3: We cast to 'any' to bypass the 'invoke' type definition mismatch
+    // THE 'any' CAST FIX
     const response = await (llm as any).invoke(prompt);
-
-    // 6. Return the answer text
     return response.content;
 
   } catch (error) {

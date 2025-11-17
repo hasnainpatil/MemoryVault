@@ -1,21 +1,24 @@
 {
-    "compilerOptions": {
-      /* --- How to Translate --- */
-      "target": "es6",
-      "module": "commonjs",
-  
-      /* --- Where to Find Files --- */
-      "outDir": "./dist",
-      "rootDir": "./src",
-  
-      /* --- How Strict to Be --- */
-      "strict": true,
-  
-      /* --- Extra Rules --- */
-      "esModuleInterop": true,  /* <--- THIS IS THE MAGIC FLAG FOR EXPRESS */
-      "skipLibCheck": true,
-      "forceConsistentCasingInFileNames": true
-    },
-    "include": ["src/**/*"],
-    "exclude": ["node_modules"]
-  }
+  "compilerOptions": {
+    /* --- How to Translate --- */
+    "target": "es6",
+    "module": "node16",
+    "moduleResolution": "node16",
+
+    /* --- Where to Find Files --- */
+    "outDir": "./dist",
+    "rootDir": "./src",
+
+    /* --- How Strict to Be --- */
+    "strict": true,
+
+    /* --- Extra Rules --- */
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"]
+}

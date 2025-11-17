@@ -6,7 +6,7 @@
 // to the "namespace import" style (import * as ...).
 // This is a safer way to import old CommonJS libraries.
 import cors from 'cors'; // Import it
-import express = require('express');
+import express from 'express';
 import { Express, Request, Response } from 'express'; // We can still import types!
 import * as dotenv from 'dotenv';
 

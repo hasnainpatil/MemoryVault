@@ -16,12 +16,13 @@ export default function Home() {
     },
   };
 
+  // Smooth "spring" animation for items
   const itemVariants = {
-    hidden: { y: 10, opacity: 0 }, // Reduced movement from 20 to 10
+    hidden: { y: 10, opacity: 0 }, 
     visible: { 
       y: 0, 
       opacity: 1,
-      transition: { type: "spring", stiffness: 100, damping: 20 } // Smooth spring physics
+      transition: { type: "spring", stiffness: 100, damping: 20 }
     },
   };
 
@@ -54,7 +55,7 @@ export default function Home() {
           className="text-6xl md:text-8xl font-bold mb-6 tracking-tight"
         >
           Memory
-          {/* CHANGED: Solid Blue color with a strong drop-shadow glow */}
+          {/* Solid Blue color with a strong drop-shadow glow */}
           <span className="text-blue-500 drop-shadow-[0_0_35px_rgba(59,130,246,0.8)] ml-2">
             Vault
           </span>
@@ -69,20 +70,23 @@ export default function Home() {
           and retrieve insights instantly using <span className="text-white font-semibold">RAG technology</span>.
         </motion.p>
 
-        {/* Buttons */}
+        {/* Buttons (Cleaned Up) */}
         <motion.div variants={itemVariants} className="flex gap-4 justify-center">
           <Link href="/login">
-            <button className="group relative px-8 py-4 bg-blue-600 rounded-xl font-bold text-white overflow-hidden transition-all hover:scale-105 hover:shadow-[0_0_40px_-10px_rgba(37,99,235,0.5)]">
-              <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+            <motion.button 
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="group relative px-8 py-4 bg-blue-600 rounded-xl font-bold text-white overflow-hidden shadow-lg shadow-blue-500/25"
+            >
+              {/* The "Shine" effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-[100%] group-hover:translate-x-[100%] transition-transform duration-700 ease-in-out" />
+              
               <span className="relative flex items-center gap-2">
                 Get Started <ArrowRight className="w-5 h-5" />
               </span>
-            </button>
+            </motion.button>
           </Link>
-          
-          <button className="px-8 py-4 rounded-xl font-bold text-gray-300 border border-white/10 hover:bg-white/5 hover:text-white transition-all">
-            Watch Demo
-          </button>
+          {/* "Watch Demo" button is fully removed */}
         </motion.div>
 
         {/* Feature Grid (Floating Cards) */}
