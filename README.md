@@ -5,7 +5,7 @@
 <h1 align="center">MemoryVault</h1>
 
 <p align="center">
-  Architected a privacy-first, full-stack app (Next.js/Node.js) deploying a **RAG pipeline** with **768-dim Gemini embeddings**, **Pinecone** vector search, and **RLS/metadata filtering** to deliver semantic answers with **<2s latency**.
+  Architected a privacy-first, full-stack app (Next.js/Node.js) deploying a <b>RAG pipeline</b> with <b>768-dim Gemini embeddings</b>, <b>Pinecone</b> vector search, and <b>RLS/metadata filtering</b> to deliver semantic answers with <b>&lt;2s latency</b>.
 </p>
 
 <p align="center">
